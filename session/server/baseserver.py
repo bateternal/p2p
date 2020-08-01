@@ -42,8 +42,13 @@ class BaseServer:
 
 	def send(self, addr ,data):
 		clientsocket = self.__clients[addr]
+		response = b'0000'
+		clientsocket.send(response)
 		check_point = 0
 		while True:
+			msg = clientsocket.recv(1024)
+			if msg != b'1':
+				continue
 			if check_point*1000 > len(data):
 				response = b'1111'
 				clientsocket.send(response)

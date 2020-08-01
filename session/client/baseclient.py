@@ -11,15 +11,20 @@ class BaseClient:
 		socket_object.connect((HOST, PORT))
 
 	def __del__(self):
-		self.socket_object.close()
-
+		try:
+			self.socket_object.close()
+		except:
+			pass
+			
 	def request(self, data):
 		data = self.payload + data
 		socket_object.sendall(data)
 		data =  socket_object.recv(1024)
-		packets = [None for i in range(10000)] #max size of file is 10MB or 10000 1KB
-		while data != b'1111':
-			header = data[:4]
-			paylaod = data[4:]
-			packets[int(header)] = paylaod
-				
+		return data
+
+	def close(self):
+		try:
+			self.socket_object.close()
+		except:
+			pass
+							
