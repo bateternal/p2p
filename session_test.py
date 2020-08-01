@@ -6,6 +6,8 @@ from session.client import Client
 
 from threading import Thread
 
+import sys
+
 import time
 
 session = Session.getInstance()
@@ -25,7 +27,7 @@ client = Client('127.0.0.1',65432,'TCP')
 @session.handler_tcp
 def message(socket_type, message , addr):
 	print(message, addr,1)
-	server.send(addr, b'1111')
+	server.send(addr, b'1110')
 
 @session.handler_udp
 def message(socket_type, message , addr):
@@ -44,3 +46,9 @@ client = Client('127.0.0.1',1113,'UDP')
 
 client.send_udp(b'hello UDP')
 
+time.sleep(2)
+t1.join()
+t2.join()
+server.close()
+server2.close()
+sys.exit()
