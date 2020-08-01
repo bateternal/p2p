@@ -1,26 +1,33 @@
 
-import socket
+import socket, time
 
 class BaseClient:
 
 	def __init__(self, host, port, socket_type):
-		self.socket_object = socket.socket(socket.AF_INET, socket_type) #socket.SOCK_STREAM socket.SOCK_DGRAM
+		if socket_type not in ["UDP","TCP"]:
+			raise Exception("socket type must be tcp or udp")
+		self.socket_object = socket.socket(socket.AF_INET, socket.SOCK_DGRAM if socket_type == 'UDP' else socket.SOCK_STREAM) #socket.SOCK_STREAM socket.SOCK_DGRAM
 		self.socket_type = socket_type
 		self.check_point = 0
-		self.payload = b'0' if socket_type == 'UDP' else b'1'
-		socket_object.connect((HOST, PORT))
+		self.host = host
+		self.port = port
+		if socket_type == "TCP":
+			self.socket_object.connect((host, port))
 
 	def __del__(self):
 		try:
 			self.socket_object.close()
 		except:
 			pass
-			
+
 	def request(self, data):
-		data = self.payload + data
-		socket_object.sendall(data)
-		data =  socket_object.recv(1024)
-		return data
+		if self.socket_type == "TCP":
+			self.socket_object.sendall(data)
+			data =  self.socket_object.recv(1024)
+			return data
+		else:
+			self.socket_object.sendto(data, (self.host , self.port))
+			return
 
 	def close(self):
 		try:

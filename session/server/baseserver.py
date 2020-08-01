@@ -7,34 +7,42 @@ class BaseServer:
 
 	__clients = {}
 
-	def __init__(self, host ,port):
-		self.socket_object = socket.socket()
-		self.socket_object.bind((host, port))
-		self.socket_object.listen(5) 
+	def __init__(self, host ,port ,socket_type='TCP'):
+		self.socket_type = socket_type
+		if socket_type == 'UDP':
+			self.socket_object = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+			self.socket_object.bind((host, port))
+		else:
+			self.socket_object = socket.socket()
+			self.socket_object.bind((host, port))
+			self.socket_object.listen(5) 
 
 	def start(self):
-		while True:
-			clientsocket, addr = socket_object.accept()
-			self.__clients[addr] = clientsocket
-			start_new_thread(on_new_client,(clientsocket,addr))
+		if self.socket_type == "TCP":
+			while True:
+				clientsocket, addr = self.socket_object.accept()
+				self.__clients[addr] = clientsocket
+				self.start_new_thread(self.on_new_client,(clientsocket,addr))
+		else:
+			self.on_new_udp_client()
+
 
 	def start_new_thread(self ,target ,args):
 		t = Thread(target=target,args=args)
-		t.daemon = True
 		t.start()
 
-	def on_new_client(clientsocket, addr):
+	def on_new_udp_client(self):
 		while True:
-			#TODO
+			data, address = self.socket_object.recvfrom(4096)
+			if data and data != b'':
+				Session.getInstance().send_to_upper_layer(self.socket_type ,data ,address)
+				sent = self.socket_object.sendto(data, address)
+
+	def on_new_client(self, clientsocket, addr):
+		while True:
 			msg = clientsocket.recv(1024)
-			socket_type = msg[:1]
-			if socket_type == b'0':
-				#TODO udp
-				Session.send_to_upper_layer(int(socket_type) ,msg[1:] ,addr)
-				clientsocket.close()
-				del self.__clients[addr]
-			else:
-				Session.send_to_upper_layer(int(socket_type) ,msg[1:] ,addr)
+			if msg and msg != b'':
+				Session.getInstance().send_to_upper_layer(self.socket_type ,msg ,addr)
 			
 	def close(self, addr):
 		self.__clients[addr].close()
@@ -55,7 +63,7 @@ class BaseServer:
 				break
 
 			target = data[check_point*1000:check_point*1000+1000]
-			header = str(10000 + check_point + 1)[1:].encode()
+			header = str(10000 + check_point + 1).encode()
 			response = header + target
 			clientsocket.send(response)
 			check_point += 1
