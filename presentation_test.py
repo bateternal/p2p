@@ -47,7 +47,7 @@ View.get("/request/file",fileserver)
 
 
 r = Request.get("file:127.0.0.1:%s/request/file"%port1,data=json.dumps({"file":"sample.txt"}))
-if r:
+if r.code == 200:
 	res = Request.get("file:127.0.0.1:%s/request/file"%port1,data=json.dumps({"download":"sample.txt"}))
 	if res.code == 123:
 

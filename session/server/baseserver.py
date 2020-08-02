@@ -1,7 +1,9 @@
 from session import Session
 
 import socket
-from threading import Thread
+from threading import Thread, Lock
+
+from settings import *
 
 class BaseServer:
 
@@ -11,6 +13,8 @@ class BaseServer:
 
 	def __init__(self, host ,port ,socket_type='TCP'):
 		self.socket_type = socket_type
+		self.lock = Lock()
+		self.connection_count = 0
 		if socket_type == 'UDP':
 			self.socket_object = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 			self.socket_object.bind((host, port))
@@ -56,6 +60,11 @@ class BaseServer:
 		clientsocket.send(response)
 
 	def send(self, addr ,data):
+		self.lock.acquire()
+		if self.connection_count > MAX_CONNETION:
+			self.send_ack(addr)
+		self.connection_count += 1
+		self.lock.release()
 		clientsocket = self.__clients[addr]
 		response = b'0000'
 		clientsocket.send(response)
@@ -75,3 +84,6 @@ class BaseServer:
 			response = header + target
 			clientsocket.send(response)
 			check_point += 1
+		self.lock.acquire()
+		self.connection_count -= 1
+		self.lock.release()

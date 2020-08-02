@@ -1,24 +1,40 @@
-import json, os
+import json, os, threading
+from .data import Data
 
-self.lock = threading.Lock()
+lock = threading.Lock()
 
 def get_nodes():
-	with open('application/configs/nodes.json') as json_file:
-    	data = json.load(json_file)
-    return data["nodes"]
+	with open(Data.cluster_list) as json_file:
+		data = json.load(json_file)
+	return data
 
-def update_nodes(nodes):
-	self.lock.acquire()
-	current_nodes = get_nodes()["nodes"]
-	for node in current_nodes:
-		if node not in nodes:
-			nodes.append(node)
-	with open('application/configs/nodes.json', 'w') as outfile:
-    	json.dump({"nodes":nodes}, outfile)
-	self.lock.release()
+def is_node_active(ip):
+	data = get_nodes():
+	if "ip" in data["nodes"]:
+		return data["nodes"]["ip"]["active"]	
+	return False
+
+def active_node(ip):
+	lock.acquire()
+	data = get_nodes():
+	data["nodes"]["ip"]["active"] = True
+	with open(Data.cluster_list, 'w') as outfile:
+		json.dump(data, outfile)
+	lock.release()
+
+def update_nodes(nodes,lock):
+	lock.acquire()
+	data = get_nodes():
+	for ip in nodes.keys():
+		if nodes["ip"]["active"] or "ip" not in data["nodes"]:
+			data["nodes"]["ip"] = nodes["ip"]
+
+	with open(Data.cluster_list, 'w') as outfile:
+		json.dump(data, outfile)
+	lock.release()
 
 def get_available_files():
-	return os.listdir('application/files')
+	return os.listdir(Data.directory)
 	
 def is_file_available(file):
 	return file in get_available_files()
