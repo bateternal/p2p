@@ -8,6 +8,8 @@ class TCP(BaseClient):
 		data = self.request(data)
 		if data == b'1111':
 			return data
+		if data == b'1000':
+			return data
 		packets = [None for i in range(10000)] #max size of file is 10MB or 10000 1KB
 		while data != b'1111':
 			header = data[:4]

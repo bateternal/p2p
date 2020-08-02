@@ -12,6 +12,7 @@ class BaseClient:
 		self.host = host
 		self.port = port
 		if socket_type == "TCP":
+			self.socket_object.settimeout(2)
 			self.socket_object.connect((host, port))
 
 	def __del__(self):

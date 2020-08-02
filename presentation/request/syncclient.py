@@ -1,5 +1,7 @@
 from presentation.request import BaseClient
 
+from presentation.response import OKResponse, NotFound, FileResponse
+
 from session.client import Client
 
 class SyncClient(BaseClient):
@@ -13,4 +15,4 @@ class SyncClient(BaseClient):
 		method = (method + ' '*4)[:4]
 		data = url.encode() + method.encode() + body.encode()
 		response = SyncClient.client.send_udp(data)
-		return ""
+		return OKResponse()

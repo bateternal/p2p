@@ -6,14 +6,17 @@ from presentation.utils import Port
 from session.server import Server 
 from session import Session
 
+from settings import *
+
 from threading import Thread
+
 
 class SyncServer(BaseServer):
 	session = Session.getInstance()
 
 	def __init__(self, *args, **kwargs):
 		super(SyncServer, self).__init__(*args, **kwargs)
-		self.port = Port.get_free_udp_port()
+		self.port = UDP_PORT
 		SyncServer.server = Server(self.host, self.port,socket_type='UDP')
 
 	def start(self):

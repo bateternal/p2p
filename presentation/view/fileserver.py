@@ -2,6 +2,7 @@ from presentation.view import BaseServer
 from presentation.view import View
 from presentation.utils import Request
 from presentation.utils import Port
+from presentation.response import OKResponse, NotFound, FileResponse
 
 from session.server import Server
 from session import Session
@@ -30,14 +31,14 @@ class FileServer(BaseServer):
 		request = Request(url=url,method=method,remote=addr,
 			body=body,subject="File")
 		response = View.call_api(method,url,request)
-		if response == "ok":
+		if response.code == 200:
 			FileServer.server.send_ack(addr, True)
-		elif response == "nok":
-			return
-		else:
-			#TODO‌conevrt file to binary
-			file_data = open(response,'rb').read()
-			file_data = (response + ' '*20)[:20].encode() + file_data
+		elif response.code == 404:
+			FileServer.server.send_ack(addr)
+		elif response.code == 123:
+			data = response.data
+			file_data = open(data,'rb').read()
+			file_data = (response.data + ' '*20)[:20].encode() + file_data
 			FileServer.server.send(addr,file_data)
 
 	@staticmethod

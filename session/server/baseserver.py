@@ -52,7 +52,7 @@ class BaseServer:
 
 	def send_ack(self, addr ,payload=False):
 		clientsocket = self.__clients[addr]
-		response = b'1111' if payload else b'0000'
+		response = b'1111' if payload else b'1000'
 		clientsocket.send(response)
 
 	def send(self, addr ,data):
