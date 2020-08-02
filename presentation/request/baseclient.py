@@ -1,8 +1,6 @@
 
 class BaseClient:
 
-	def __init__(self,host,port,url,data):
+	def __init__(self,host,port):
 		self.host = host
-		self.port = port
-		self.url = url
-		self.data = data
+		self.port = int(port)

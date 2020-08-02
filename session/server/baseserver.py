@@ -21,7 +21,7 @@ class BaseServer:
 
 	def start(self):
 		if self.socket_type == "TCP":
-			while BaseServer.while_condition:
+			while True:
 				clientsocket, addr = self.socket_object.accept()
 				self.__clients[addr] = clientsocket
 				self.start_new_thread(self.on_new_client,(clientsocket,addr))
@@ -34,20 +34,19 @@ class BaseServer:
 		t.start()
 
 	def on_new_udp_client(self):
-		while BaseServer.while_condition:
+		while True:
 			data, address = self.socket_object.recvfrom(4096)
 			if data and data != b'':
 				Session.getInstance().send_to_upper_layer(self.socket_type ,data ,address)
-				sent = self.socket_object.sendto(data, address)
+				# sent = self.socket_object.sendto(data, address)
 
 	def on_new_client(self, clientsocket, addr):
-		while BaseServer.while_condition:
+		while True:
 			msg = clientsocket.recv(1024)
 			if msg and msg != b'':
 				Session.getInstance().send_to_upper_layer(self.socket_type ,msg ,addr)
 			
 	def close(self):
-		BaseServer.while_condition = False
 		for addr in self.__clients:
 			self.__clients[addr].close()
 
@@ -72,7 +71,7 @@ class BaseServer:
 				break
 
 			target = data[check_point*1000:check_point*1000+1000]
-			header = str(10000 + check_point + 1).encode()
+			header = str(10000 + check_point + 1)[1:].encode()
 			response = header + target
 			clientsocket.send(response)
 			check_point += 1

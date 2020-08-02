@@ -25,6 +25,7 @@ class BaseClient:
 			self.socket_object.sendall(data)
 			data =  self.socket_object.recv(1024)
 			return data
+
 		else:
 			self.socket_object.sendto(data, (self.host , self.port))
 			return
