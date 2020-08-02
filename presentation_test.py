@@ -37,6 +37,7 @@ Request.post("sync:127.0.0.1:%s/sync"%port2,data=json.dumps({"a":{"b":3},"c":"as
 def fileserver(request):
 	body = str(request.body,'utf-8')
 	data = json.loads(body)
+	print(request.remote)
 	print(data)
 	if "file" in data and data["file"] == "sample.txt":
 		return OKResponse("ok")
