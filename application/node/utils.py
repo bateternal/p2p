@@ -1,8 +1,12 @@
 import json, os, threading
 from .data import Data
 
-lock = threading.Lock()
+from .connection import Connection
+from threading import Thread
 
+from presentation.request import Request
+lock = threading.Lock()
+lock_node = threading.Lock()
 def get_nodes():
 	lock.acquire()
 	with open(Data.node_config) as json_file:
@@ -56,3 +60,34 @@ def get_available_files():
 	
 def is_file_available(file):
 	return file in get_available_files()
+
+def request_file(node,file,lock):
+	print('request file')
+	print(node)
+	res = Request.get("file:%s:%s/request/file"%(node["ip"],node["port"]),data=json.dumps({"file":file}))
+	print(res.__dict__)
+	if res.code == 200:
+		lock.acquire()
+		choose_node_for_get_file(node,file)
+		lock.release()
+
+def request_to_all(file):
+	Connection.reset()
+	nodes = get_nodes()["nodes"].values()
+	for node in nodes:
+		Thread(target=request_file,args=(node,file,lock_node,)).start()
+
+def choose_node_for_get_file(node,file):
+	if Connection.target:
+		return
+	Connection.target = node
+	print("node chosen")
+	res = Request.get("file:%s:%s/request/file"%(node["ip"],node["port"]),data=json.dumps({"download":file}))
+	if res.code == 123:
+		print("download")
+		f = open("application/files/%s"%(res.data['file_name']), 'w+b')
+		f.write(res.data['binary'])
+		f.close()
+		active_node(node["ip"])
+	else:
+		print("file not found")
