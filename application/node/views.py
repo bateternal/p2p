@@ -1,14 +1,12 @@
 from .decorators import *
 from .utils import *
-from .connection import Connection
-from settings import *
-from threading import Thread
 
-from presentation.request import Request
+from settings import *
+
 from presentation.response import OKResponse, NotFound, FileResponse
 
 lock_upload = threading.Lock()
-lock_node = threading.Lock()
+
 
 def file_server(request):
 	print('file server')
