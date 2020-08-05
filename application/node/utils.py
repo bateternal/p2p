@@ -62,10 +62,7 @@ def is_file_available(file):
 	return file in get_available_files()
 
 def request_file(node,file,lock):
-	print('request file')
-	print(node)
 	res = Request.get("file:%s:%s/request/file"%(node["ip"],node["port"]),data=json.dumps({"file":file}))
-	print(res.__dict__)
 	if res.code == 200:
 		lock.acquire()
 		choose_node_for_get_file(node,file)
@@ -75,19 +72,18 @@ def request_to_all(file):
 	Connection.reset()
 	nodes = get_nodes()["nodes"].values()
 	for node in nodes:
-		Thread(target=request_file,args=(node,file,lock_node,)).start()
+		if node["ip"] is not "0.0.0.0":
+			Thread(target=request_file,args=(node,file,lock_node,)).start()
 
 def choose_node_for_get_file(node,file):
 	if Connection.target:
 		return
 	Connection.target = node
-	print("node chosen")
 	res = Request.get("file:%s:%s/request/file"%(node["ip"],node["port"]),data=json.dumps({"download":file}))
 	if res.code == 123:
-		print("download")
 		f = open("application/files/%s"%(res.data['file_name']), 'w+b')
 		f.write(res.data['binary'])
 		f.close()
 		active_node(node["ip"])
 	else:
-		print("file not found")
+		print("\nfile %s not found\n>"%file,end='')

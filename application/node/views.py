@@ -9,8 +9,7 @@ lock_upload = threading.Lock()
 
 
 def file_server(request):
-	print('file server')
-	print(request.remote[0])
+	print('\nfile server',request.remote[0],"\n>",end='')
 	if not is_node_active(request.remote[0]):
 		time.sleep(10)
 	body = str(request.body,'utf-8')
@@ -20,28 +19,30 @@ def file_server(request):
 	if "download" in data and is_file_available(data["download"]):
 		return FileResponse(Data.directory + data["download"])
 	else:
-		NotFound()
+		return NotFound()
 
 def sync_nodes(request):
-	print("sync node")
+	print('\nsync node',request.remote[0],"\n>",end='')
 	data = str(request.body,'utf-8')
-	nodes = json.loads(data)
+	data = json.loads(data)
 
-	for ip in nodes:
+	for ip in data['nodes']:
 		if ip == "0.0.0.0":
-			nodes[request.remote[0]] = {"ip":request.remote[0],"port":nodes[ip]["port"],"active":True}
-			del nodes[ip]
+			data['nodes'][request.remote[0]] = {"ip":request.remote[0],"port":data['nodes'][ip]["port"],"active":True}
+			del data['nodes'][ip]
 			break
-	update_nodes(nodes,lock_upload)
+	if data["target_ip"] in data["nodes"]:
+		del data["nodes"][data["target_ip"]]
+	update_nodes(data['nodes'],lock_upload)
 	return OKResponse()
 
 @run_periodic
 def discovery():
-	print("start discovery")
-	data = get_nodes()["nodes"]
+	print("\nstart discovery\n>",end='')
+	data = {}
+	data["nodes"] = get_nodes()["nodes"]
 	for ip in get_cluster():
+		if ip == "0.0.0.0":
+			continue
+		data["target_ip"] = ip
 		Request.post("sync:%s:%s/discovery"%(ip,UDP_PORT),data=json.dumps(data))
-
-
-
-
