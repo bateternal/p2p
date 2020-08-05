@@ -31,6 +31,7 @@ class Manager:
 		port2 = sync_server.start()
 		with open(Data.node_config, 'w') as outfile:
 			json.dump({"nodes":{"0.0.0.0":{"ip":"0.0.0.0","port":port1,"active":False}}},outfile)
+
 		print("listening on 0.0.0.0:%s TCP"%port1)
 		print("listening on 0.0.0.0:%s UDP"%port2)
 		logging.info("listening on 0.0.0.0:%s TCP"%port1)

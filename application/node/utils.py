@@ -56,7 +56,8 @@ def update_nodes(nodes,lock):
 	lock.release()
 
 def get_available_files():
-	return os.listdir(Data.directory)
+	files =  os.listdir(Data.directory)
+	return files
 	
 def is_file_available(file):
 	return file in get_available_files()
@@ -65,6 +66,7 @@ def request_file(node,file,lock):
 	res = Request.get("file:%s:%s/request/file"%(node["ip"],node["port"]),data=json.dumps({"file":file}))
 	if res.code == 200:
 		lock.acquire()
+		print
 		choose_node_for_get_file(node,file)
 		lock.release()
 
@@ -72,16 +74,17 @@ def request_to_all(file):
 	Connection.reset()
 	nodes = get_nodes()["nodes"].values()
 	for node in nodes:
-		if node["ip"] is not "0.0.0.0":
+		if node["ip"] != "0.0.0.0":
 			Thread(target=request_file,args=(node,file,lock_node,)).start()
 
 def choose_node_for_get_file(node,file):
 	if Connection.target:
 		return
+	print("\nchoose %s\n>"%node["ip"],end='')
 	Connection.target = node
 	res = Request.get("file:%s:%s/request/file"%(node["ip"],node["port"]),data=json.dumps({"download":file}))
 	if res.code == 123:
-		f = open("application/files/%s"%(res.data['file_name']), 'w+b')
+		f = open("application/files/%s"%(res.data['file_name'].split("/")[-1]), 'w+b')
 		f.write(res.data['binary'])
 		f.close()
 		active_node(node["ip"])

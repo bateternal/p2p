@@ -15,10 +15,13 @@ def file_server(request):
 	body = str(request.body,'utf-8')
 	data = json.loads(body)
 	if "file" in data and is_file_available(data["file"]):
+		print("ok")
 		return OKResponse()
 	if "download" in data and is_file_available(data["download"]):
+		print("sending")
 		return FileResponse(Data.directory + data["download"])
 	else:
+		print("not found")
 		return NotFound()
 
 def sync_nodes(request):
