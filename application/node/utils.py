@@ -84,7 +84,7 @@ def choose_node_for_get_file(node,file):
 	Connection.target = node
 	res = Request.get("file:%s:%s/request/file"%(node["ip"],node["port"]),data=json.dumps({"download":file}))
 	if res.code == 123:
-		f = open("application/files/%s"%(res.data['file_name'].split("/")[-1]), 'w+b')
+		f = open(Data.directory+res.data['file_name'].split("/")[-1], 'w+b')
 		f.write(res.data['binary'])
 		f.close()
 		active_node(node["ip"])
